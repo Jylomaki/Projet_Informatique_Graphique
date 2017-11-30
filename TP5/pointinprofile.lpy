@@ -1,0 +1,58 @@
+from openalea.plantgl.all import *
+from random import uniform
+from math import pi
+
+def generate_points(nbpoints,size):
+  pts = []
+  for i in xrange(nbpoints):
+    angle = uniform(0,2 * pi)
+    ok = False
+    while not ok:
+      x,y,z =  uniform(-1,1),uniform(-1,1),uniform(0,1)
+      if (x**2+y**2) <= profile(z)**2: ok = True
+    pts.append(Vector3(x,y,z)*size)
+  return pts
+
+pts = generate_points(10000,10)
+
+attractor_grid = Point3Grid(pts,20)
+Ldetect = 1.0
+Lkill = 0.5
+AngleDetect = 90
+module Apex
+module Pointset 
+Axiom: ,(3) @g(PointSet(pts,width=2)) ,(2) Apex(Vector3(0.,0.,0.),(0,0,1))
+
+derivation length: 50
+production:
+Apex(pos,dir):
+  attractors =  attractor_grid.query_point_in_cone(pos,dir,Ldetect,AngleDetect)
+  if(len(attractors) >0) :
+    next_dir = pointset_mean_direction(pos, pts, attractors)
+    next_pos = pos + next_dir
+    kill_att = attractor_grid.query_ball_point(next_pos,Lkill)
+    attractor_grid.disable_points(kill_att)
+    
+    produce LineTo(pos) Apex(pos,) Apex(next_pos,next_dir)
+  
+
+interpretation:
+
+
+endlsystem
+###### INITIALISATION ######
+
+__lpy_code_version__ = 1.1
+
+def __initialiseContext__(context):
+	import openalea.plantgl.all as pgl
+	profile = pgl.NurbsCurve2D(	
+	    ctrlPointList = pgl.Point3Array([(0, 0.0181818, 1),(0.219697, 0.0363636, 1),(0.297727, 0.313636, 1),(0.389394, 0.327273, 1),(0.593182, 0.290909, 1),(0.633977, 0.182074, 1),(0.784091, 0.0954545, 1),(0.884091, 0.172727, 1),(1, 0, 1)]) , 
+	    )
+	profile.name = "profile"
+	panel_0 = ({'active': True, 'visible': True, 'name': 'Panel 1'},[('Function',profile)])
+	parameterset = [panel_0,]
+	context["__functions__"] = [('profile',profile),]
+	context["__curves__"] = []
+	context["__parameterset__"] = parameterset
+	context["profile"] = pgl.QuantisedFunction(profile)

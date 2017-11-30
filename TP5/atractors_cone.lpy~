@@ -1,0 +1,65 @@
+from openalea.plantgl.all import *
+from random import uniform
+from math import pi
+
+def generate_points(nbpoints,size):
+  pts = []
+  for i in xrange(nbpoints):
+    angle = uniform(0,2 * pi)
+    ok = False
+    while not ok:
+      x,y,z =  uniform(-1,1),uniform(-1,1),uniform(0,1)
+      if (x**2+y**2) <= profile(z)**2: ok = True
+    pts.append(Vector3(x,y,z)*size)
+  return pts
+
+pts = generate_points(10000,10)
+
+attractor_grid = Point3Grid(pts,20)
+GroLen = 1.0
+Ldetect = 2.0*GroLen
+Lkill = 1.0*GroLen
+AngleDetect = 90.0/180.0*pi
+module Apex
+module Att
+module dead_node 
+Axiom: ,(3) Att ,(2) Apex(Vector3(0.,0.,0.), Vector3(0,0,1))
+
+derivation length: 30
+production:
+Apex(pos,dir):
+  attractors =  attractor_grid.query_points_in_cone(pos,dir,Ldetect,AngleDetect)
+  if(len(attractors) >5) :
+    next_dir = pointset_mean_direction(pos, pts, attractors)
+    next_pos = pos + next_dir.normed()*GroLen
+    kill_att = attractor_grid.query_ball_point(next_pos,Lkill)
+    attractor_grid.disable_points(kill_att)
+    
+    normal_vec = Vector3(-next_dir.y,next_dir.z,next_dir.x)
+    normal_vec2 = Vector3(-normal_vec.y, normal_vec.z, normal_vec.x)
+    
+    produce LineTo(pos) [Apex(pos,normal_vec)][Apex(next_pos,next_dir)][Apex(pos,-normal_vec)] 
+  else:
+    produce dead_node
+    
+interpretation:
+Att --> @g(PointSet(attractor_grid.get_enabled_points()))
+
+
+endlsystem
+###### INITIALISATION ######
+
+__lpy_code_version__ = 1.1
+
+def __initialiseContext__(context):
+	import openalea.plantgl.all as pgl
+	profile = pgl.NurbsCurve2D(	
+	    ctrlPointList = pgl.Point3Array([(0, 0.0181818, 1),(0.219697, 0.0363636, 1),(0.297727, 0.313636, 1),(0.389394, 0.327273, 1),(0.593182, 0.290909, 1),(0.633977, 0.182074, 1),(0.784091, 0.0954545, 1),(0.884091, 0.172727, 1),(1, 0, 1)]) , 
+	    )
+	profile.name = "profile"
+	panel_0 = ({'active': True, 'visible': True, 'name': 'Panel 1'},[('Function',profile)])
+	parameterset = [panel_0,]
+	context["__functions__"] = [('profile',profile),]
+	context["__curves__"] = []
+	context["__parameterset__"] = parameterset
+	context["profile"] = pgl.QuantisedFunction(profile)

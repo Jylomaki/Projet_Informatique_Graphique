@@ -1,0 +1,32 @@
+Axiom: -(90) Sweep(nerve,Section,3.0,0.1, 1.0,witdth)
+derivation length:2
+production:
+F(L) --> _(L/100.0) F(L/3.0) -(45) F(L/27.0) -(45) F(L/3.0) +(45) F(L/27.0) +(45)  F(L/3.0) +(45) F(L/27.0) +(45)  F(L/3.0) +(45) F(L/27.0) +(45)  F(L/3.5) -(45) F(L/27.0) -(45) F(L/3.0) -(45) F(L/27.0) -(45) F(L/3.0) -(45) F(L/27.0) -(45) F(L/3.0) +(45) F(L/27.0) +(45)  F(L/3.0)
+endlsystem
+###### INITIALISATION ######
+
+__lpy_code_version__ = 1.1
+
+def __initialiseContext__(context):
+	import openalea.plantgl.all as pgl
+	nerve = pgl.NurbsCurve2D(	
+	    ctrlPointList = pgl.Point3Array([(-0.5, 0, 1),(-0.114719, 0.194805, 1),(0.110368, -0.348482, 1),(0.590909, 0.233766, 1)]) , 
+	    )
+	nerve.name = "nerve"
+	import openalea.plantgl.all as pgl
+	witdth = pgl.NurbsCurve2D(	
+	    ctrlPointList = pgl.Point3Array([(0, 0, 1),(0.30547, 0.462208, 1),(0.33278, 0.0600976, 1),(1, 0, 1)]) , 
+	    )
+	witdth.name = "witdth"
+	Section = pgl.BezierCurve2D(	
+	    pgl.Point3Array([(-0.5, 0, 1),(-0.727146, 0.019682, 1),(0.120262, 0.686719, 1),(0.327418, 0.02683, 1)]) , 
+	    )
+	Section.name = "Section"
+	panel_0 = ({'active': True, 'visible': True, 'name': 'Panel 1'},[('Curve2D',nerve),('Function',witdth),('Curve2D',Section)])
+	parameterset = [panel_0,]
+	context["__functions__"] = [('witdth',witdth),]
+	context["__curves__"] = [('nerve',nerve),('Section',Section),]
+	context["__parameterset__"] = parameterset
+	context["nerve"] = nerve
+	context["witdth"] = pgl.QuantisedFunction(witdth)
+	context["Section"] = Section

@@ -1,0 +1,7 @@
+Axiom: -(90) F(1,1)
+derivation length:3
+production:
+F(L,I) --> {F(L/3, I-1)-(90) F(L/3,I-1) +(90)  F(L/3,I-1) +(90)  F(L/3,I-1) +(90)  F(L/3,I-1) -(90) F(L/3,I-1) -(90) F(L/3,I-1) -(90)F(L/3,I-1) +(90)  F(L/3,I-1)}
+
+F(L,0) --> F(L)
+endlsystem
